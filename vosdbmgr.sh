@@ -1,11 +1,15 @@
 #!/bin/bash --norc
-#
-#  Written by: Tom Hicks. 12/9/2019.
-#  Last Modified: Initial creation.
-#
 #  Backup and/or restore the PostgreSQL VosDB database.
 #
-#  Examples:
+#  To save the current VOS DB into a directory called 'backups':
+#     > docker run -it --rm --name vosdbmgr --network vos_net -v ${PWD}/backups:/backups vosdbmgr
+#
+#  To restore (fill or replace) the current VOS DB with a previous backup
+#     > docker run -it --rm --name vosdbmgr --network vos_net -v ${PWD}/backups:/backups vosdbmgr \
+#       -c restore -f vos.sql
+#
+#  Written by: Tom Hicks. 12/9/2019.
+#  Last Modified: Must save & restore as superuser.
 #
 
 # Use or initialize standard PostgreSQL environment variables:
@@ -13,7 +17,7 @@ export PGDATABASE=${PGDATABASE:-vos}
 export PGHOST=${PGHOST:-pgdb}
 export PGPASSFILE=${PGPASSFILE:-.pgpass}
 export PGPORT=${PGPORT:-5432}
-export PGUSER=${PGUSER:-astrolabe}
+export PGUSER=${PGUSER:-postgres}
 
 
 # Internal variables or script argument variables:
@@ -157,6 +161,5 @@ elif [ "$COMMAND" = "restore" ]; then
     psql ${PGDATABASE} < /${DUMPFILE}
 
 fi
-
 
 exit 0
