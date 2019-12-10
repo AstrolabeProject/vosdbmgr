@@ -146,12 +146,15 @@ if [ "$COMMAND" = "save" ]; then
     fname="${DUMPFILE}_${ftime}.sql"
     fpath="${BACKUP_DIR}/${fname}"
     # uses environment variables for PGHOST, PGPORT, PGUSER
-    pg_dump -f ${fpath} -d ${PGDATABASE}
-    chmod 400 ${fpath}
+    pg_dump --clean --if-exists -f ${fpath} -d ${PGDATABASE}
+    chmod 440 ${fpath}
 
 elif [ "$COMMAND" = "restore" ]; then
     dpath="${BACKUP_DIR}/${DUMPFILE}"
-    pg_restore --clean --if-exists --single-transaction -f ${dpath}
+    echo "Copying ${dpath} to / ..."
+    cp -p ${dpath} /
+    echo "Restoring database from ${DUMPFILE} ..."
+    psql ${PGDATABASE} < /${DUMPFILE}
 
 fi
 
