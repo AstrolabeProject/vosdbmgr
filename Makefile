@@ -1,21 +1,20 @@
+BAKDIR=${PWD}/backups
 ENVLOC=/etc/trhenv
 IMG=vosdbmgr:devel
-JOPTS='_JAVA_OPTIONS -Xms512m -Xmx4096m'
 NAME=vosdbmgr
 NET=vos_net
-STACK=vos
-file=vos.sql
+file=vos
 
 .PHONY: help docker exec restore save stop
 
 help:
-	@echo 'Make what? help, build, docker, exec, run, stop'
+	@echo 'Make what? help, docker, exec, restore, save, stop'
 	@echo '  where: help    - show this help message'
 	@echo '         docker  - build the container image'
 	@echo '         exec    - exec into the running backup/restore (CLI arg: NAME=containerID)'
-	@echo '         restore - start a restore (CLI arg: file=dumpFilename)'
-	@echo '         save    - start a backup before it finishes (CAUTION!)'
-	@echo '         stop    - stop the backup/restore container (for development)'
+	@echo '         restore - start a restore (CLI arg: file=dump-file-path)'
+	@echo '         save    - backup the VOS DB to a file in ./backups'
+	@echo '         stop    - stop the backup/restore container before it finishes (CAUTION!)'
 
 docker:
 	docker build -t ${IMG} .
@@ -25,10 +24,10 @@ exec:
 	docker exec -it ${NAME} bash
 
 restore:
-	docker run -it --rm --name ${NAME} --network ${NET} -e ${JOPTS} -v ${PWD}/backups:/backups ${IMG} -c restore -f ${file}
+	docker run -it --rm --name ${NAME} --network ${NET} -v ${BAKDIR}:/backups ${IMG} -c restore -f ${file} -v
 
 save:
-	docker run -it --rm --name ${NAME} --network ${NET} -e ${JOPTS} -v ${PWD}/backups:/backups ${IMG}
+	docker run -it --rm --name ${NAME} --network ${NET} -v ${BAKDIR}:/backups ${IMG} -c save -f ${file} -v
 
 stop:
 	docker stop ${NAME}
