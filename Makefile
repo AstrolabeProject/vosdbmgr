@@ -31,3 +31,6 @@ save:
 
 stop:
 	docker stop ${NAME}
+
+%:
+	@:
