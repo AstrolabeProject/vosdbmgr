@@ -21,23 +21,27 @@ export PGUSER=${PGUSER:-postgres}
 
 
 # internal variables or script argument variables:
-COMMAND=
+COMMAND=download
 BACKUP_DIR=/backups
 DEBUG=0
 DUMPFILE=vos
+LOADLINK=
 VERBOSE=0
 
 
 Usage () {
     echo ""
-    echo "Usage: $0 [-h] -c save [-f filename]  [-v | --debug]"
+    echo "Usage: $0 [-h] -c load -l fileURL  [-v | --debug]"
+    echo "         OR"
+    echo "       $0 [-h] -c save [-f filename]  [-v | --debug]"
     echo "         OR"
     echo "       $0 [-h] -c restore -f filepath  [-v | --debug]"
     echo "where:"
     echo "    -h, --help          - print this help message and exit"
-    echo "    -c, --cmd command   - required action: 'save' or 'restore'"
+    echo "    -c, --cmd command   - required action: 'load', 'save', or 'restore' (default: load)"
     echo "    -f, --file filename - for 'save': optional file name of the file to be created [default: vos]"
     echo "    -f, --file filepath - for 'restore': required file path of the file to restore from"
+    echo "    -l, --link fileURL  - for 'link': required URL of the backup file to download"
     echo "    -v, --verbose       - provide more information during run [default: not verbose]"
     echo "    --debug             - show additional debugging information"
     echo ""
@@ -60,6 +64,9 @@ while [ $# -gt 0 ]; do
                       ;;
         "-f"|"--file") shift
                        DUMPFILE=${1:-vos}
+                       ;;
+        "-l"|"--link") shift
+                       LOADLINK=${1:-vos}
                        ;;
         "-v"|"--verbose") VERBOSE=1
                           ;;
@@ -88,25 +95,35 @@ if [ -z "$COMMAND" -o -z "$c1" -o "$c1" = "-" ]; then
 fi
 
 # check the command argument for validity
-if [ "$COMMAND" != "save" -a "$COMMAND" != "restore" ]; then
-    echo "ERROR: Command must be one of 'save' or 'restore', not '$COMMAND'"
+if [ "$COMMAND" != "load" -a "$COMMAND" != "save" -a "$COMMAND" != "restore" ]; then
+    echo "ERROR: Command must be one of 'load' or 'save' or 'restore', not '$COMMAND'"
     Usage
     exit 11
 fi
 
 
 # test for the dump file argument; a filename for 'save' but a path for 'restore'
-f1=`echo $DUMPFILE | cut -c1`
-if [ -z "$DUMPFILE" -o -z "$f1" -o "$f1" = "-" ]; then
-    if [ "$COMMAND" = "save" ]; then
-        echo "ERROR at '$DUMPFILE': The save filename is required and may not begin with '-'."
-        echo "       Did you forgot to specify a filename after the -f or --file flag?"
-    else
-        echo "ERROR at '$DUMPFILE': The restore file path is required and may not begin with '-'."
-        echo "       Did you forgot to specify a file path after the -f or --file flag?"
+if [ "$COMMAND" = "load" ]; then
+    ld1=`echo $LOADLINK | cut -c1`
+    if [ -z "$LOADLINK" -o -z "$ld1" -o "$ld1" = "-" ]; then
+        echo "ERROR at '$LOADLINK': The download link argument is required and may not begin with '-'."
+        echo "      Did you forgot to specify a download file URL after the -l or --link flag?"
+        Usage
+        exit 20
     fi
-    Usage
-    exit 20
+else
+    f1=`echo $DUMPFILE | cut -c1`
+    if [ -z "$DUMPFILE" -o -z "$f1" -o "$f1" = "-" ]; then
+        if [ "$COMMAND" = "save" ]; then
+            echo "ERROR at '$DUMPFILE': The save filename is required and may not begin with '-'."
+            echo "       Did you forgot to specify a filename after the -f or --file flag?"
+        else
+            echo "ERROR at '$DUMPFILE': The restore file path is required and may not begin with '-'."
+            echo "       Did you forgot to specify a file path after the -f or --file flag?"
+        fi
+        Usage
+        exit 30
+    fi
 fi
 
 
@@ -129,8 +146,14 @@ if [ $DEBUG -eq 1 ]; then
 fi
 
 
-# Do the actual backup or restore work
-if [ "$COMMAND" = "save" ]; then
+# Do the actual load, backup, or restore work
+if [ "$COMMAND" = "load" ]; then
+    lname='vos.sql'
+    rm -f $lname
+    wget --no-check-certificate -O - "$LOADLINK" | gunzip > $lname
+    psql ${PGDATABASE} < ${lname}           # restore the database from downloaded data
+
+elif [ "$COMMAND" = "save" ]; then
     ftime=`date +%y-%m-%d_%H.%M`
     bname=`basename $DUMPFILE .sql`
     fname="${bname}_${ftime}.sql"
@@ -168,7 +191,7 @@ elif [ "$COMMAND" = "restore" ]; then
         echo "ERROR: The given restore file '$dfile' must exist and be readable within"
         echo "       a directory mounted by the container at ${BACKUP_DIR}"
         Usage
-        exit 21
+        exit 31
     fi
 
     if [ $VERBOSE -eq 1 ]; then

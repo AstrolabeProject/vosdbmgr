@@ -3,7 +3,7 @@ FROM ubuntu:18.04
 MAINTAINER Tom Hicks <hickst@email.arizona.edu>
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends postgresql-client \
+    && apt-get install -y --no-install-recommends wget postgresql-client \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
