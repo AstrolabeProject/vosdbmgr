@@ -150,7 +150,14 @@ fi
 if [ "$COMMAND" = "load" ]; then
     lname='vos.sql'
     rm -f $lname
-    wget --no-check-certificate -O - "$LOADLINK" | gunzip > $lname
+    if [ $VERBOSE -eq 1 ]; then
+        echo "Downloading the data for the VOS database ..."
+    fi
+    wget --quiet --no-check-certificate --show-progress -O - "$LOADLINK" | gunzip > $lname
+
+    if [ $VERBOSE -eq 1 ]; then
+        echo "Restoring the VOS database from the downloaded data file ..."
+    fi
     psql ${PGDATABASE} < ${lname}           # restore the database from downloaded data
 
 elif [ "$COMMAND" = "save" ]; then
