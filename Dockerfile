@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM postgres:14
 
 MAINTAINER Tom Hicks <hickst@email.arizona.edu>
 
