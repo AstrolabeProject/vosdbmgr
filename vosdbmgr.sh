@@ -4,12 +4,15 @@
 #  To save the current VOS DB into a directory called 'backups':
 #     > docker run -it --rm --name vosdbmgr --network vos_net -v ${PWD}/backups:/backups vosdbmgr
 #
+#  To save the current VOS DB from the host 'imgdb' into a directory called 'backups':
+#     > docker run -it --rm --name vosdbmgr -e PGHOST=imgdb --network vos_net -v ${PWD}/backups:/backups vosdbmgr
+#
 #  To restore (fill or replace) the current VOS DB with a previous backup
 #     > docker run -it --rm --name vosdbmgr --network vos_net -v ${PWD}/backups:/backups vosdbmgr \
 #       -c restore -f vos.sql
 #
 #  Written by: Tom Hicks. 12/9/2019.
-#  Last Modified: Must save & restore as superuser.
+#  Last Modified: Add note on alternate database naming.
 #
 
 # use or initialize standard PostgreSQL environment variables:
