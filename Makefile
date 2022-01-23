@@ -4,6 +4,7 @@ ENVLOC=/etc/trhenv
 IMG=astrolabe/vosdbmgr:4.1
 NAME=vosdbmgr
 NET=vos_net
+PGHOST=pgdb
 file=vos
 
 .PHONY: help docker exec restore save stop
@@ -25,10 +26,10 @@ exec:
 	docker exec -it ${NAME} bash
 
 restore:
-	docker run -it --rm --name ${NAME} --network ${NET} -v ${BAKDIR}:/backups ${IMG} -c restore -f ${file} -v
+	docker run -it --rm --name ${NAME} -e PGHOST=${PGHOST} --network ${NET} -v ${BAKDIR}:/backups ${IMG} -c restore -f ${file} -v
 
 save:
-	docker run -it --rm --name ${NAME} --network ${NET} -v ${BAKDIR}:/backups ${IMG} -c save -f ${file} -v
+	docker run -it --rm --name ${NAME} -e PGHOST=${PGHOST} --network ${NET} -v ${BAKDIR}:/backups ${IMG} -c save -f ${file} -v
 
 stop:
 	docker stop ${NAME}
