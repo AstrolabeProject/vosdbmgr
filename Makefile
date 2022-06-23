@@ -4,7 +4,7 @@ ENVLOC=/etc/trhenv
 IMG=astrolabe/vosdbmgr:4.1
 NAME=vosdbmgr
 NET=vos_net
-PGHOST=pgdb
+PGHOST=alwsdb
 file=vos
 
 .PHONY: help docker exec restore save stop

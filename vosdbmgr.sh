@@ -4,20 +4,20 @@
 #  To save the current VOS DB into a directory called 'backups':
 #     > docker run -it --rm --name vosdbmgr --network vos_net -v ${PWD}/backups:/backups vosdbmgr
 #
-#  To save the current VOS DB from the host 'imgdb' into a directory called 'backups':
-#     > docker run -it --rm --name vosdbmgr -e PGHOST=imgdb --network vos_net -v ${PWD}/backups:/backups vosdbmgr
+#  To save the current VOS DB from the host 'alwsdb' into a directory called 'backups':
+#     > docker run -it --rm --name vosdbmgr -e PGHOST=alwsdb --network vos_net -v ${PWD}/backups:/backups vosdbmgr
 #
 #  To restore (fill or replace) the current VOS DB with a previous backup
 #     > docker run -it --rm --name vosdbmgr --network vos_net -v ${PWD}/backups:/backups vosdbmgr \
-#       -c restore -f vos.sql
+#       -c restore -f alws.sql
 #
 #  Written by: Tom Hicks. 12/9/2019.
 #  Last Modified: Add note on alternate database naming.
 #
 
 # use or initialize standard PostgreSQL environment variables:
-export PGDATABASE=${PGDATABASE:-vos}
-export PGHOST=${PGHOST:-pgdb}
+export PGDATABASE=${PGDATABASE:-alws}
+export PGHOST=${PGHOST:-alwsdb}
 export PGPASSFILE=${PGPASSFILE:-.pgpass}
 export PGPORT=${PGPORT:-5432}
 export PGUSER=${PGUSER:-postgres}
@@ -27,7 +27,7 @@ export PGUSER=${PGUSER:-postgres}
 COMMAND=download
 BACKUP_DIR=/backups
 DEBUG=0
-DUMPFILE=vos
+DUMPFILE=alws
 LOADLINK=
 VERBOSE=0
 
@@ -42,7 +42,7 @@ Usage () {
     echo "where:"
     echo "    -h, --help          - print this help message and exit"
     echo "    -c, --cmd command   - required action: 'load', 'save', or 'restore' (default: load)"
-    echo "    -f, --file filename - for 'save': optional file name of the file to be created [default: vos]"
+    echo "    -f, --file filename - for 'save': optional file name of the file to be created [default: alws]"
     echo "    -f, --file filepath - for 'restore': required file path of the file to restore from"
     echo "    -l, --link fileURL  - for 'link': required URL of the backup file to download"
     echo "    -v, --verbose       - provide more information during run [default: not verbose]"
@@ -66,10 +66,10 @@ while [ $# -gt 0 ]; do
                       COMMAND=${1:-save}
                       ;;
         "-f"|"--file") shift
-                       DUMPFILE=${1:-vos}
+                       DUMPFILE=${1:-alws}
                        ;;
         "-l"|"--link") shift
-                       LOADLINK=${1:-vos}
+                       LOADLINK=${1:-alws}
                        ;;
         "-v"|"--verbose") VERBOSE=1
                           ;;
@@ -151,7 +151,7 @@ fi
 
 # Do the actual load, backup, or restore work
 if [ "$COMMAND" = "load" ]; then
-    lname='vos.sql'
+    lname='alws.sql'
     rm -f $lname
     if [ $VERBOSE -eq 1 ]; then
         echo "Downloading the data for the VOS database ..."
