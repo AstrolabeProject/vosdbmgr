@@ -1,7 +1,7 @@
 BAKDIR=${PWD}/backups
 ENVLOC=/etc/trhenv
 #IMG=vosdbmgr:devel
-IMG=astrolabe/vosdbmgr:4.1
+IMG=astrolabe/vosdbmgr:2.0
 NAME=vosdbmgr
 NET=vos_net
 PGHOST=alwsdb
